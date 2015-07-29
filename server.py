@@ -38,32 +38,37 @@ def user_list():
 def show_user(id):
     """Return page showing the details of a given user.
     """
-    logged_in_user = User.query.filter_by(user_id=id).one()
-    print logged_in_user
+    logged_in_user = session['user_id']
+    logged_in_user_id =logged_in_user('user_id')
+    logged_in_user = User.query.filter_by(user_id=logged_in_user_id).first()
 
-
-    return render_template('user_info.html', user=logged_in_user)
+    return render_template('user_info.html', display_user=logged_in_user)
                         
 
 
-@app.route("/login", methods=["POST"])
-def process_login(id):
+@app.route("/login", methods=["POST", "GET"])
+def process_login():
     """Log user into site.
 
     Find the user's login credentials located in the 'request.form'
     dictionary, look up the user, and store them in the session.
     """
 
-    user_id = request.form.get("id")
-    print user_id
-    new_email = request.form.get("email")
-    new_password = request.form.get("password")
-    session['user_id'] = user_id
+    user_email = request.form.get("email")
+    user_password = request.form.get("password")
     
-    flash("You are now logged in!")
+    session = {}
+    if session.get('user_id', None) == None:
+        this_user = db.session.query(User.user_id).filter_by(email=User.email, password=User.password).one()
+        session['user_id'] = {'email': User.email, 'password': User.password}
+        flash("Welcome back!")
+    else:
+        flash("Wrong credentials")    
+    
     user = session['user_id']
 
-    return redirect('/users/<int:id>', id=user_id)
+
+    return redirect('/users')
 
 
 
