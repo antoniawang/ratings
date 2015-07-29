@@ -2,7 +2,6 @@
 
 from model import User, Rating, Movie, connect_to_db, db
 from server import app
-import time
 import datetime
 
 def load_users(filename):
@@ -14,7 +13,7 @@ def load_users(filename):
         line = line.strip()
         user_record = line.split("|")
 
-        new_user = User(age=user_record[2], zipcode=user_record[4])
+        new_user = User(age=user_record[1], zipcode=user_record[4])
         db.session.add(new_user)
     db.session.commit()
 
@@ -58,6 +57,7 @@ def load_ratings(filename):
 
 if __name__ == "__main__":
     connect_to_db(app)
+    db.create_all()
 
     load_users('seed_data/u.user')
     load_movies('seed_data/u.item')
