@@ -2,7 +2,7 @@
 
 from jinja2 import StrictUndefined
 
-from flask import Flask, render_template, redirect, request, flash, session
+from flask import Flask, render_template, url_for, redirect, request, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Rating, Movie, connect_to_db, db
@@ -38,11 +38,10 @@ def user_list():
 def show_user(id):
     """Return page showing the details of a given user.
     """
-    logged_in_user = session['user_id']
-    logged_in_user_id =logged_in_user('user_id')
-    logged_in_user = User.query.filter_by(user_id=logged_in_user_id).first()
 
-    return render_template('user_info.html', display_user=logged_in_user)
+    logged_in_user = User.query.filter_by(user_id=id).first()
+    
+    return render_template('user_info.html', user=logged_in_user)
                         
 
 
@@ -56,20 +55,37 @@ def process_login():
 
     user_email = request.form.get("email")
     user_password = request.form.get("password")
+   
+    this_user = db.session.query(User.user_id).filter_by(email=user_email).first()
     
-    session = {}
-    if session.get('user_id', None) == None:
-        this_user = db.session.query(User.user_id).filter_by(email=User.email, password=User.password).one()
-        session['user_id'] = {'email': User.email, 'password': User.password}
-        flash("Welcome back!")
+    if this_user is None:
+        new_user = User(email=user_email, password=user_password)
+        db.session.add(new_user)
+        db.session.commit()
+        this_user = db.session.query(User.user_id).filter_by(email=user_email).first()
+        flash("Welcome, %s! You've created an account. Your password is %s." %(user_email, user_password))
     else:
-        flash("Wrong credentials")    
+        flash("Welcome back, %s!" %(user_email))
     
-    user = session['user_id']
+    session['user_id'] = this_user.user_id
+    
+    
+    
+    user = int(session['user_id'])
+    return redirect('/users/%d' %(user))
+    
+@app.route("/logout")
+def process_logout():
+    session.pop('user_id', None)
+    flash("You have successfully logged out.")
+    return redirect('/')
 
-
-    return redirect('/users')
-
+@app.route("/movies")
+def show_movies():
+    """Return page showing list of all the movies.
+    """
+    movies = Movie.query.all()
+    return render_template('movies.html', movies=movies)
 
 
 if __name__ == "__main__":
