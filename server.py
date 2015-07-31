@@ -7,6 +7,8 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Rating, Movie, connect_to_db, db
 
+from datetime import date
+
 
 app = Flask(__name__)
 
@@ -39,9 +41,13 @@ def show_user(id):
     """Return page showing the details of a given user.
     """
 
-    logged_in_user = User.query.filter_by(user_id=id).first()
-    
-    return render_template('user_info.html', user=logged_in_user)
+    user = User.query.filter_by(user_id=id).one()
+
+    rated_movies = db.session.query(Rating.movie_id, Rating.score).filter_by(user_id=id).join(Movie)
+
+
+
+    return render_template('user_info.html', user=user, rated_movies=rated_movies)
                         
 
 
@@ -68,9 +74,6 @@ def process_login():
         flash("Welcome back, %s!" %(user_email))
     
     session['user_id'] = this_user.user_id
-    
-    
-    
     user = int(session['user_id'])
     return redirect('/users/%d' %(user))
     
@@ -84,8 +87,52 @@ def process_logout():
 def show_movies():
     """Return page showing list of all the movies.
     """
-    movies = Movie.query.all()
-    return render_template('movies.html', movies=movies)
+    movies = Movie.query.order_by(Movie.title).all()
+    #release_year = movies.released_at.strftime("%Y")
+    #release_year = db.session.query(Movie.released_at).all().strftime("%Y")
+    return render_template('movies_list.html', movies=movies)
+
+
+@app.route("/movies/<int:id>")
+def show_movie(id):
+    """Return page showing the details of a given user.
+    """
+
+    movie_detail = Movie.query.filter_by(movie_id=id).one()
+
+    
+    return render_template('movie_info.html', movie=movie_detail)
+
+@app.route("/add_rating", methods=["POST", "GET"])
+def add_rating():
+    """User add rating for a movie
+    """
+    user = int(session['user_id'])
+    user_score = request.form.get("score")
+    this_movie_id = request.form.get("movie_id")
+    this_movie_id_tuple = (int(this_movie_id),)
+    print this_movie_id_tuple, type(this_movie_id_tuple), "**********************"
+    rated_movies = db.session.query(Rating.movie_id).filter_by(user_id=user).all()
+    print rated_movies, type(rated_movies), "**********************"
+
+    print rated_movies, "**************"
+    
+    if this_movie_id_tuple not in set(rated_movies):
+        new_rating = Rating(user_id=user, movie_id=this_movie_id, score=user_score)
+        db.session.add(new_rating)
+        db.session.commit()
+        flash("You've added a new rating.")
+    else:
+        already_rated_movie = db.session.query(Rating).filter_by(movie_id=this_movie_id, user_id=user).one()
+        print already_rated_movie.score, "************************************"
+        already_rated_movie.score = user_score
+        print already_rated_movie.score, "************************************"
+        db.session.commit()
+        flash("You've re-rated this movie.")
+
+
+
+    return redirect('/users/%d' %(user))
 
 
 if __name__ == "__main__":

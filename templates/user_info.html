@@ -7,7 +7,68 @@
   <br>Age: {{ user.age }}
   <br>Zip Code: {{ user.zipcode }}
 
-         
 
+
+ <table>
+        <thead>
+        <tr>
+            <th>Movie ID</th>
+            <th>Rating</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for movie in rated_movies %}
+            <tr>
+                <td>{{ movie.movie_id }}</td>
+                <td>{{ movie.score }}</td>
+               
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>         
+
+        <!-- user_id \t movie_id \t score \t timestamp. -->
+
+<!--         class Rating(db.Model):
+    """User ratings of website."""
+
+    __tablename__ = "Ratings"
+
+    rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('Movies.movie_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.user_id'))
+    score = db.Column(db.Integer)  
+
+class Rating(db.Model):
+    """User ratings of website."""
+
+    __tablename__ = "Ratings"
+
+    rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('Movies.movie_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.user_id'))
+    score = db.Column(db.Integer)  
+
+
+"Movies" (
+  movie_id INTEGER NOT NULL, 
+  title VARCHAR(64) NOT NULL, 
+  released_at DATETIME, 
+  imdb_url VARCHAR(64), 
+  PRIMARY KEY (movie_id)
+
+
+
+
+
+SELECT Movies.title, Ratings.score FROM Users 
+      LEFT JOIN Ratings ON Users.user_id = Ratings.user_id
+      JOIN Movies ON Ratings.movie_id = Movies.movie_id
+      Where Users.user_id = 1;
+
+
+
+
+ -->
 
 {% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Movie Info</h2>
+  <br>Movie ID: {{ movie.movie_id }}
+  <br>Title: {{ movie.title }} 
+  <br>Released on {{ movie.released_at }}
+  <br>IMDB Page: {{ movie.imdb_url }}
+
+<br><br>
+<br><br>
+
+<form method="POST" action="/add_rating">
+  Rate This Movie
+    <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+    <br><br>
+    <input type="radio" name="score" value="1">1
+    <input type="radio" name="score" value="2">2
+    <input type="radio" name="score" value="3">3
+    <input type="radio" name="score" value="4">4
+    <input type="radio" name="score" value="5">5
+  <br><br>
+  <input type="submit">
+</form>
+
+
+{% endblock %}
