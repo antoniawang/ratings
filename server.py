@@ -79,7 +79,7 @@ def process_login():
     
 @app.route("/logout")
 def process_logout():
-    session.pop('user_id', None)
+    session.pop('user_id')
     flash("You have successfully logged out.")
     return redirect('/')
 
